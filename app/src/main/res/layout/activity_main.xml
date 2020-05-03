@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/mBtmConn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="start connection"
+        tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/mMsg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/mBtmConn"
+        android:hint="type your msg here     "
+        tools:ignore="HardcodedText" />
+
+    <Button
+        android:id="@+id/mBtmSubmit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/mBtmConn"
+        android:layout_toEndOf="@+id/mMsg"
+        android:text="Submit text test"
+        tools:ignore="HardcodedText" />
+
+    <ScrollView
+        android:id="@+id/mScroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/mMsg" >
+
+        <LinearLayout
+            android:id="@+id/mLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+
+        </LinearLayout>
+
+    </ScrollView>
+
+
+</RelativeLayout>
