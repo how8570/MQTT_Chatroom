@@ -59,6 +59,7 @@ public class MQTT extends Thread{
                 if (dataType.equals("msg")) {
                     msgReceiveBuffer.put(mqttMessage.getPayload());
                 } else if (dataType.equals("img")) {
+                    Log.d(tag, "received len = " + mqttMessage.getPayload().length);
                     imgReciveBuffer.put(mqttMessage.getPayload());
                 }
 

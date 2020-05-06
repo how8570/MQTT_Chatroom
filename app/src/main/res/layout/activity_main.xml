@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -14,13 +13,23 @@
         android:text="start connection"
         tools:ignore="HardcodedText" />
 
+    <Button
+        android:id="@+id/mBtmPhoto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/mMsg"
+        android:text="Send photo"
+        tools:ignore="HardcodedText" />
+
     <EditText
         android:id="@+id/mMsg"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/mBtmConn"
         android:hint="type your msg here     "
-        tools:ignore="HardcodedText" />
+        android:inputType="text"
+        tools:ignore="HardcodedText"
+        android:autofillHints="" />
 
     <Button
         android:id="@+id/mBtmSubmit"

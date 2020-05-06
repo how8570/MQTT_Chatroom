@@ -1,9 +1,16 @@
 package pers.how8570.mqtt_chatroom;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -16,6 +23,9 @@ import android.widget.TextView;
 
 import org.eclipse.paho.client.mqttv3.MqttException;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -31,8 +41,12 @@ public class MainActivity extends AppCompatActivity {
     public BlockingQueue<byte[]> msgReceiveBuffer = new LinkedBlockingQueue<>();
     public BlockingQueue<byte[]> imgReceiveBuffer = new LinkedBlockingQueue<>();
 
+    public static final int PICK_IMAGE = 1;
+
     public Button mBtmConn;
     public Button mBtmSubmit;
+    public Button mBtnPhoto;
+
     public ScrollView mScroll;
     public EditText mMsg;
     public LinearLayout mLinearLayout;
@@ -71,6 +85,17 @@ public class MainActivity extends AppCompatActivity {
                 if (!msg.matches("")){
                     publishClient.publish("room/msg", msg.getBytes());
                 }
+            }
+        });
+
+        mBtnPhoto = findViewById(R.id.mBtmPhoto);
+        mBtnPhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(intent, PICK_IMAGE);
             }
         });
 
@@ -115,6 +140,33 @@ public class MainActivity extends AppCompatActivity {
         mScroll = findViewById(R.id.mScroll);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == PICK_IMAGE && data != null) {
+            Uri uri = data.getData();
+            ContentResolver cr = this.getContentResolver();
+            try {
+                assert uri != null;
+                Bitmap bitmap = BitmapFactory.decodeStream(cr.openInputStream(uri));
+
+                int bytes = bitmap.getByteCount();
+                ByteBuffer buf = ByteBuffer.allocate(bytes);
+                bitmap.copyPixelsToBuffer(buf);
+                byte[] byteArray = buf.array();
+
+                Log.d("main", "byteArray len = " + byteArray.length);
+//                String encoded_base64 = Base64.encodeToString(byteArray, Base64.DEFAULT);
+//                Log.d("main", "encoded_base64 len = " + encoded_base64.length());
+                publishClient.publish("room/img", byteArray);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
     /**
      * update message to latest and scroll down
@@ -156,9 +208,14 @@ public class MainActivity extends AppCompatActivity {
             iv.setLayoutParams(lp);
 
             Date currentTime = Calendar.getInstance().getTime();
-            @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-            String formattedTime = sdf.format(currentTime);
-            iv.setImageResource(R.drawable.ic_launcher_background);
+//            @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+//            String formattedTime = sdf.format(currentTime);
+
+//            byte[] decodedString = Base64.decode(b.toString(), Base64.DEFAULT);
+//            Log.d("main", "decodedString = " + decodedString);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length);
+            iv.setImageBitmap(bitmap);
+//            iv.setImageResource(R.drawable.ic_launcher_background);
 
             mLinearLayout.addView(iv);
             if (!mScroll.isFocused()) {
@@ -194,3 +251,5 @@ public class MainActivity extends AppCompatActivity {
 
 
 }
+
+
