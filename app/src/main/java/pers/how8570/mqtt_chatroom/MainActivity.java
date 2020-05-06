@@ -9,6 +9,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -25,8 +26,10 @@ import pers.how8570.mqtt_chatroom.tools.MQTT;
 
 public class MainActivity extends AppCompatActivity {
 
-    public MQTT publishClient, subscribeClient;
-    public BlockingQueue<byte[]> receiveBuffer = new LinkedBlockingQueue<>();
+    public MQTT publishClient;
+    public MQTT subscribeClient;
+    public BlockingQueue<byte[]> msgReceiveBuffer = new LinkedBlockingQueue<>();
+    public BlockingQueue<byte[]> imgReceiveBuffer = new LinkedBlockingQueue<>();
 
     public Button mBtmConn;
     public Button mBtmSubmit;
@@ -41,8 +44,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         try {
-            publishClient = new MQTT("room", null);
-            subscribeClient = new MQTT("room", receiveBuffer);
+            publishClient = new MQTT("room", null, null);
+            subscribeClient = new MQTT("room", msgReceiveBuffer, imgReceiveBuffer);
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -75,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         mMsg.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
-//                Log.e("Keydown", "code: " + keyCode);
+//                Log.d("Keydown", "code: " + keyCode);
                 if (event.getAction() == KeyEvent.ACTION_DOWN &&
                         (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_NUMPAD_ENTER) ){
                     mBtmSubmit.callOnClick();
@@ -103,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
                         });
                     }
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         };
@@ -118,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     public void updateMsg() {
         byte[] b;
-        while ( (b = receiveBuffer.poll()) != null){
+        while ((b = msgReceiveBuffer.poll()) != null) {
 
             TextView tv = new TextView(this);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -133,6 +137,31 @@ public class MainActivity extends AppCompatActivity {
 
             mLinearLayout.addView(tv);
             if (!mScroll.isFocused()){
+                // need do take post method to make sure add View finished
+                mScroll.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        scrollToBottom(mScroll);
+                    }
+                });
+            }
+        }
+
+        while ((b = imgReceiveBuffer.poll()) != null) {
+
+            ImageView iv = new ImageView(this);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT, // Width of ImageView
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            iv.setLayoutParams(lp);
+
+            Date currentTime = Calendar.getInstance().getTime();
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+            String formattedTime = sdf.format(currentTime);
+            iv.setImageResource(R.drawable.ic_launcher_background);
+
+            mLinearLayout.addView(iv);
+            if (!mScroll.isFocused()) {
                 // need do take post method to make sure add View finished
                 mScroll.post(new Runnable() {
                     @Override

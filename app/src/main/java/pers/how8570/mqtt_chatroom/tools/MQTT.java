@@ -26,11 +26,13 @@ public class MQTT extends Thread{
     private static String broker = "tcp://192.168.0.101:1883";
     private static String userName = "admin";
 
-    private static BlockingQueue receiveBuffer;
+    private BlockingQueue msgReceiveBuffer;
+    private BlockingQueue imgReciveBuffer;
 
-    public MQTT(String room, final BlockingQueue<byte[]> buffer) throws MqttException {
+    public MQTT(String room, final BlockingQueue<byte[]> msg, final BlockingQueue img) throws MqttException {
 
-        this.receiveBuffer = buffer;
+        this.msgReceiveBuffer = msg;
+        this.imgReciveBuffer = img;
 
         mqttClient = new MqttClient(broker, room, new MemoryPersistence());
         options = new MqttConnectOptions();
@@ -50,9 +52,16 @@ public class MQTT extends Thread{
             }
 
             @Override
-            public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
-                Log.i(tag, "recive msg: " + s + ": " + Arrays.toString(mqttMessage.getPayload()));
-                receiveBuffer.put(mqttMessage.getPayload());
+            public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
+                String dataType = topic.substring(topic.lastIndexOf('/') + 1).trim();
+                Log.i(tag, "recive msg: " + topic + ": " + Arrays.toString(mqttMessage.getPayload()));
+                Log.i(tag, "data type: " + dataType + " .");
+                if (dataType.equals("msg")) {
+                    msgReceiveBuffer.put(mqttMessage.getPayload());
+                } else if (dataType.equals("img")) {
+                    imgReciveBuffer.put(mqttMessage.getPayload());
+                }
+
             }
 
             @Override
